@@ -1,0 +1,28 @@
+{
+  "name": "netwatch",
+  "private": true,
+  "version": "1.0.0",
+  "description": "NetWatch — real-time device monitoring platform",
+  "workspaces": [
+    "server",
+    "web",
+    "simulator"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n api,worker,notify,sim,web -c cyan,magenta,yellow,green,blue \"npm:dev:api\" \"npm:dev:worker\" \"npm:dev:notify\" \"npm:dev:sim\" \"npm:dev:web\"",
+    "dev:api": "npm -w server run api",
+    "dev:worker": "npm -w server run worker",
+    "dev:notify": "npm -w server run notifier-mock",
+    "dev:sim": "wait-on -t 60000 http://localhost:4000/healthz && npm -w simulator start",
+    "dev:web": "npm -w web run dev",
+    "build": "npm -w web run build",
+    "start": "npm run build && concurrently -k -n api,worker,notify,sim -c cyan,magenta,yellow,green \"SERVE_WEB=1 npm -w server run api\" \"npm:dev:worker\" \"npm:dev:notify\" \"npm:dev:sim\"",
+    "test": "npm -w server test",
+    "typecheck": "npm -w server run typecheck && npm -w simulator run typecheck && npm -w web run typecheck",
+    "reset": "rm -rf server/data simulator/.state"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.5",
+    "wait-on": "^8.0.5"
+  }
+}

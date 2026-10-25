@@ -1,0 +1,32 @@
+# docker compose up --build   ->  http://localhost:4000
+x-app: &app
+  build: .
+  environment: &env
+    DB_PATH: /data/netwatch.db
+    NOTIFIER_URL: http://notifier:4200/notify
+    SIMULATOR_URL: http://simulator:4100
+    LOG_FORMAT: json
+  volumes: [data:/data]
+  restart: unless-stopped
+
+services:
+  api:
+    <<: *app
+    command: npm -w server run api
+    ports: ["4000:4000"]
+  worker:
+    <<: *app
+    command: npm -w server run worker
+    depends_on: [api]
+  notifier:
+    <<: *app
+    command: npm -w server run notifier-mock
+  simulator:
+    <<: *app
+    command: npm -w simulator start
+    environment:
+      <<: *env
+      API_URL: http://api:4000
+    depends_on: [api]
+volumes:
+  data:
